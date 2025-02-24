@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracking App LIFF</title>
+  <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      color: #333;
+      padding: 20px;
+    }
+    .button {
+      background-color: #00B900; /* LINE green */
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .button:hover {
+      background-color: #009800;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="color: #00B900;">Tracking App</h1>
+  <button class="button" onclick="sendLocation()">📍 Send Location</button>
+  <button class="button" onclick="sayHello()">👋 Say Hello</button>
+  <script>
+    function sendLocation() {
+      liff.sendMessages([{ type: 'text', text: 'Sending location...' }])
+        .then(() => {
+          liff.closeWindow();
+          // Optionally, prompt the user to share their location via the bot
+          liff.openWindow({
+            url: 'line://ti/p/@875iljbq', // Opens chat with your Messaging API bot
+          });
+        })
+        .catch((err) => console.error('Error:', err));
+    }
+    function sayHello() {
+      liff.sendMessages([{ type: 'text', text: 'Hello, Bot!' }])
+        .then(() => liff.closeWindow())
+        .catch((err) => console.error('Error:', err));
+    }
+
+    liff.init({
+      liffId: '1234567890-AbCdEfGh', // Replace with your LIFF ID
+    }).then(() => {
+      console.log('LIFF initialized successfully');
+      // Get user profile and interact with your bot
+      liff.getProfile().then(profile => {
+        console.log('User ID:', profile.userId);
+        // Optionally, send userId to your Nest.js backend
+        fetch(`https://ce98-84-54-70-63.ngrok-free.app/api/user?userId=${profile.userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        })
+          .then(response => response.json())
+          .then(data => console.log('Backend response:', data))
+          .catch(err => console.error('Error:', err));
+      }).catch(err => console.error('Error getting profile:', err));
+    }).catch((err) => {
+      console.error('LIFF initialization failed', err);
+    });
+  </script>
+</body>
+</html>
