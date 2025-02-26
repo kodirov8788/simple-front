@@ -80,56 +80,56 @@
       }
     }
 
-    async function authenticateWithBackend(idToken) {
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/v1/auth/line/callback`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken }),
-        });
-        const data = await response.json();
-        if (data.success) {
-          updateStatus(`Logged in as ${data.data.user.username}`);
-          console.log('Tokens:', data.data.tokens);
-          // Store tokens in localStorage or handle them as needed
-          localStorage.setItem('accessToken', data.data.tokens.accessToken);
-        } else {
-          throw new Error(data.message);
-        }
-      } catch (err) {
-        console.error('Backend auth error:', err);
-        updateStatus('Authentication failed: ' + err.message);
-      }
-    }
-
     async function initLiff() {
-      try {
-        await liff.init({ liffId: LIFF_ID,withLoginOnExternalBrowser: true });
-        
-        updateStatus('LIFF initialized');
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    updateStatus('LIFF initialized');
 
-        if (!liff.isLoggedIn()) {
-          updateStatus('Please log in with LINE');
-          liff.login({ redirectUri: window.location.href });
-        } else {
-          const idToken = liff.getIDToken();
-          if (!idToken) {
-            throw new Error('No ID token available');
-          }
-
-          // Authenticate with backend
-          await authenticateWithBackend(idToken);
-
-          // Optionally, get and log user profile
-          const profile = await liff.getProfile();
-          console.log('User Profile:', profile);
-        }
-      } catch (err) {
-        console.error('LIFF initialization failed:', err);
-        updateStatus('Initialization failed: ' + err.message);
-      }
+    if (!liff.isLoggedIn()) {
+      updateStatus('Please log in with LINE');
+      liff.login({ redirectUri: window.location.href });
+    } else {
+      const idToken = liff.getIDToken();
+      const accessToken = liff.getAccessToken(); // Get access token
+      if (!idToken || !accessToken) throw new Error('No tokens available');
+      await authenticateWithBackend(idToken, accessToken); // Send both tokens
+      const profile = await liff.getProfile();
+      console.log('User Profile:', profile);
     }
+  } catch (err) {
+    console.error('LIFF initialization failed:', err);
+    updateStatus('Initialization failed: ' + err.message);
+  }
+}
 
+async function authenticateWithBackend(idToken, accessToken) {
+  try {
+    const url = `${BACKEND_URL}/auth/line/callback`;
+    console.log('Sending request to:', url);
+    console.log('Request body:', JSON.stringify({ idToken, accessToken }));
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken, accessToken }),
+    });
+
+    const data = await response.json();
+    console.log('Response data:', data);
+
+    if (response.ok && data.success) {
+      updateStatus(`Logged in as ${data.data.user.username}`);
+      console.log('Tokens:', data.data.tokens);
+      localStorage.setItem('accessToken', data.data.tokens.accessToken);
+      localStorage.setItem('lineAccessToken', accessToken); // Store LINE access token
+    } else {
+      throw new Error(data.message || 'Unknown error from backend');
+    }
+  } catch (err) {
+    console.error('Backend auth error:', err);
+    updateStatus('Authentication failed: ' + err.message);
+  }
+}
     window.onload = initLiff;
   </script>
 </body>
