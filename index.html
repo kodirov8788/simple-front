@@ -1,136 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tracking App LIFF</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      color: #333;
-      padding: 20px;
-      text-align: center;
-    }
-    .button {
-      background-color: #00B900; /* LINE green */
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 5px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    .button:hover {
-      background-color: #009800;
-    }
-    #status {
-      margin-top: 20px;
-      color: #666;
-    }
-  </style>
-</head>
-<body>
-  <h1 style="color: #00B900;">Tracking App</h1>
-  <button class="button" onclick="sendLocation()">📍 Send Location</button>
-  <button class="button" onclick="sayHello()">👋 Say Hello</button>
-  <div id="status">Initializing...</div>
-
-  <script>
-    const BACKEND_URL = 'https://5526-84-54-70-63.ngrok-free.app';
-    const LIFF_ID = '2006951451-r7b8KqKM'; // Your LIFF ID
-
-    function updateStatus(message) {
-      document.getElementById('status').textContent = message;
-    }
-
-    async function sendLocation() {
-      try {
-        // Check if logged in
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-
-        // Request location permission
-        const location = await liff.getLocation();
-        const message = `Location: ${location.latitude}, ${location.longitude}`;
-        await liff.sendMessages([{ type: 'text', text: message }]);
-        updateStatus('Location sent successfully!');
-        liff.closeWindow();
-      } catch (err) {
-        console.error('Error sending location:', err);
-        updateStatus('Failed to send location: ' + err.message);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tracking App LIFF</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        color: #333;
+        padding: 20px;
+        text-align: center;
       }
-    }
-
-    async function sayHello() {
-      try {
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-        await liff.sendMessages([{ type: 'text', text: 'Hello, Bot!' }]);
-        updateStatus('Hello sent successfully!');
-        liff.closeWindow();
-      } catch (err) {
-        console.error('Error sending message:', err);
-        updateStatus('Failed to send hello: ' + err.message);
+      .button {
+        background-color: #00b900; /* LINE green */
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+        border-radius: 5px;
       }
-    }
+      .button:hover {
+        background-color: #009800;
+      }
+      #status {
+        margin-top: 20px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="color: #00b900">Tracking App</h1>
+    <button class="button" onclick="sendLocation()">📍 Send Location</button>
+    <button class="button" onclick="sayHello()">👋 Say Hello</button>
+    <div id="status">Initializing...</div>
 
-    async function initLiff() {
-  try {
-    await liff.init({ liffId: LIFF_ID });
-    updateStatus('LIFF initialized');
+    <script>
+      const BACKEND_URL = "https://5526-84-54-70-63.ngrok-free.app";
+      const LIFF_ID = "2006951451-r7b8KqKM"; // Your LIFF ID
 
-    if (!liff.isLoggedIn()) {
-      updateStatus('Please log in with LINE');
-      liff.login({ redirectUri: window.location.href });
-    } else {
-      const idToken = liff.getIDToken();
-      const accessToken = liff.getAccessToken(); // Get access token
-      if (!idToken || !accessToken) throw new Error('No tokens available');
-      await authenticateWithBackend(idToken, accessToken); // Send both tokens
-      const profile = await liff.getProfile();
-      console.log('User Profile:', profile);
-    }
-  } catch (err) {
-    console.error('LIFF initialization failed:', err);
-    updateStatus('Initialization failed: ' + err.message);
-  }
-}
+      function updateStatus(message) {
+        document.getElementById("status").textContent = message;
+      }
 
-async function authenticateWithBackend(idToken, accessToken) {
-  try {
-    const url = `${BACKEND_URL}/api/v1/auth/line/callback`;
-    console.log('Sending request to:', url);
-    console.log('Request body:', JSON.stringify({ idToken, accessToken }));
+      async function sendLocation() {
+        try {
+          // Check if logged in
+          if (!liff.isLoggedIn()) {
+            liff.login();
+            return;
+          }
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken, accessToken }),
-    });
+          // Request location permission
+          const location = await liff.getLocation();
+          const message = `Location: ${location.latitude}, ${location.longitude}`;
+          await liff.sendMessages([{ type: "text", text: message }]);
+          updateStatus("Location sent successfully!");
+          liff.closeWindow();
+        } catch (err) {
+          console.error("Error sending location:", err);
+          updateStatus("Failed to send location: " + err.message);
+        }
+      }
 
-    const data = await response.json();
-    console.log('Response data:', data);
+      async function sayHello() {
+        try {
+          if (!liff.isLoggedIn()) {
+            liff.login();
+            return;
+          }
+          await liff.sendMessages([{ type: "text", text: "Hello, Bot!" }]);
+          updateStatus("Hello sent successfully!");
+          liff.closeWindow();
+        } catch (err) {
+          console.error("Error sending message:", err);
+          updateStatus("Failed to send hello: " + err.message);
+        }
+      }
 
-    if (response.ok && data.success) {
-      updateStatus(`Logged in as ${data.data.user.username}`);
-      console.log('Tokens:', data.data.tokens);
-      localStorage.setItem('accessToken', data.data.tokens.accessToken);
-      localStorage.setItem('lineAccessToken', accessToken); // Store LINE access token
-    } else {
-      throw new Error(data.message || 'Unknown error from backend');
-    }
-  } catch (err) {
-    console.error('Backend auth error:', err);
-    updateStatus('Authentication failed: ' + err.message);
-  }
-}
-    window.onload = initLiff;
-  </script>
-</body>
+      async function initLiff() {
+        try {
+          await liff.init({ liffId: LIFF_ID });
+          updateStatus("LIFF initialized");
+
+          if (!liff.isLoggedIn()) {
+            updateStatus("Please log in with LINE");
+            liff.login({ redirectUri: window.location.href });
+          } else {
+            const idToken = liff.getIDToken();
+            const accessToken = liff.getAccessToken(); // Get access token
+            if (!idToken || !accessToken)
+              throw new Error("No tokens available");
+            await authenticateWithBackend(idToken, accessToken); // Send both tokens
+            const profile = await liff.getProfile();
+            console.log("User Profile:", profile);
+          }
+        } catch (err) {
+          console.error("LIFF initialization failed:", err);
+          updateStatus("Initialization failed: " + err.message);
+        }
+      }
+
+      async function authenticateWithBackend(idToken, accessToken) {
+        try {
+          const url = `${BACKEND_URL}/api/v1/auth/line/callback`;
+          console.log("Sending request to:", url);
+          console.log(
+            "Request body:",
+            JSON.stringify({ idToken, accessToken })
+          );
+
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken, accessToken }),
+          });
+          console.log("Response:", response);
+          const data = await response.json();
+          console.log("Response data:", data);
+
+          if (response.ok && data.success) {
+            updateStatus(`Logged in as ${data.data.user.username}`);
+            console.log("Tokens:", data.data.tokens);
+            localStorage.setItem("accessToken", data.data.tokens.accessToken);
+            localStorage.setItem("lineAccessToken", accessToken); // Store LINE access token
+          } else {
+            console.log("Backend auth error:", data);
+            updateStatus("Authentication failed: " + data.message);
+          }
+        } catch (err) {
+          console.log("Backend auth error:", err);
+          updateStatus("Authentication failed: " + err.message);
+        }
+      }
+      window.onload = initLiff;
+    </script>
+  </body>
 </html>
